@@ -1,5 +1,7 @@
 import React from 'react'
 
+import axios from 'axios'
+
 import Note from './components/Note'
 
 class App extends React.Component {
@@ -7,9 +9,20 @@ class App extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            notes: props.notes,
-            newNote: "uusi muistiinpano"
+            notes: [],
+            newNote: "uusi muistiinpano",
+            showAll: true
         }
+        console.log("constructor")
+    }
+
+    componentDidMount() {
+        console.log("did mount")
+        axios.get("http://localhost:3001/notes")
+            .then(response => {
+                console.log("promise fulfilled")
+                this.setState({ notes: response.data })
+            })
     }
 
     addNote = (event) => {
@@ -24,7 +37,7 @@ class App extends React.Component {
         const notes = this.state.notes.concat(noteObject)
 
         this.setState({
-            notes: notes,
+            notes,
             newNote: ''
         })
     }
@@ -34,12 +47,29 @@ class App extends React.Component {
         this.setState({ newNote: event.target.value })
     }
 
+    toggleVisible = () => {
+        this.setState({showAll: !this.state.showAll})
+    }
+
     render() {
+        console.log("render")
+        const notesToShow = this.state.showAll ?
+            this.state.notes :
+            this.state.notes.filter(note => note.important)
+
+        const label = this.state.showAll ? "vain tärkeät" : "kaikki"
+
         return (
             <div>
                 <h1>Muistiinpanot</h1>
+                <div>
+                    <button onClick={this.toggleVisible}>
+                        näytä {label}
+                    </button>
+                </div>
+
                 <ul>
-                    {this.state.notes.map((note) => <Note key={note.id} note={note} />)}
+                    {notesToShow.map((note) => <Note key={note.id} note={note} />)}
                 </ul>
                 <form onSubmit={this.addNote}>
                     <input
