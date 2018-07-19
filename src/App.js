@@ -1,74 +1,78 @@
 import React from 'react'
 
-import Note from './components/Note'
-import notesService from './services/notes'
+import Picture from './components/Picture'
+import pictureListService from './services/picturelist'
 
 class App extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            notes: [],
-            newNote: "uusi muistiinpano",
-            showAll: true
+            pictures: [],
+            newPictureName: "",
+            newPictureDir: ""
         }
         console.log("constructor")
     }
 
     componentDidMount() {
         console.log("did mount")
-        notesService
+        pictureListService
             .getAll()
-            .then(notes => {
-                this.setState({ notes: notes })
+            .then(pictures => {
+                this.setState({ pictures: pictures })
             })
     }
 
-    addNote = (event) => {
+    addPicture = (event) => {
         event.preventDefault()
         const noteObject = {
-            content: this.state.newNote,
-            date: new Date().toISOString(),
-            important: Math.random() > 0.5,
-            // id: this.state.notes.length + 1
+            name: this.state.newPictureName,
+            directory: this.state.newPictureDir,
+            // important: Math.random() > 0.5,
+            // id: this.state.pictures.length + 1
         }
 
-        // const notes = this.state.notes.concat(noteObject)
-
-        // this.setState({
-        //     notes,
-        //     newNote: ''
-        // })
-        notesService
+        pictureListService
             .create(noteObject)
             .then((response) => {
                 this.setState({
-                    notes: this.state.notes.concat(response.data),
-                    newNote: ''
+                    pictures: this.state.pictures.concat(response.data),
+                    newPictureName: '',
+                    newPictureDir: ''
                 })
             })
     }
 
-    handleNoteChange = (event) => {
+    handleNameChange = (event) => {
         console.log(event.target.value)
-        this.setState({ newNote: event.target.value })
+        this.setState({ newPictureName: event.target.value })
     }
 
-    toggleVisible = () => {
-        this.setState({showAll: !this.state.showAll})
+    handleDirChange = (event) => {
+        console.log(event.target.value)
+        this.setState({ newPictureDir: event.target.value })
     }
 
-    toggleImportanceOf = (id) => {
+    handleUpdate = (id) => {
         return () => {
-            const url = `http://localhost:3001/notes/${id}`
-            const note = this.state.notes.find(n=> n.id === id)
-            const changedNote = { ...note, important: !note.important }
+            console.log(`update ${id}`)
+        }
+    }
 
-            notesService
-                .update(id, changedNote)
-                .then( (response) => {
+    handleDelete = (id) => {
+        return () => {
+            pictureListService
+                .deleteOne(id)
+                .then(() => {
+                    let pics = [];
+                    this.state.pictures.forEach((pic) => {
+                        if (id !== pic._id) {
+                            pics.unshift(pic)
+                        }
+                    })
                     this.setState({
-                        notes: this.state.notes.map( note => note.id !== id ? note: response.data)
+                        pictures: pics
                     })
                 })
         }
@@ -76,35 +80,33 @@ class App extends React.Component {
 
     render() {
         console.log("render")
-        const notesToShow = this.state.showAll ?
-            this.state.notes :
-            this.state.notes.filter(note => note.important)
-
-        const label = this.state.showAll ? "vain tärkeät" : "kaikki"
+        const picturesToShow = this.state.pictures
 
         return (
             <div>
-                <h1>Muistiinpanot</h1>
-                <div>
-                    <button onClick={this.toggleVisible}>
-                        näytä {label}
-                    </button>
-                </div>
+                <h1>Picture list</h1>
 
                 <ul>
-                    {notesToShow.map((note) =>
-                        <Note
-                            key={note.id}
-                            note={note}
-                            toggleImportance={this.toggleImportanceOf(note.id)}
+                    {picturesToShow.map((pic) =>
+                        <Picture
+                            key={pic._id}
+                            picture={pic}
+                            handleUpdate={this.handleUpdate(pic._id)}
+                            handleDelete={this.handleDelete(pic._id)}
                         />
                     )}
                 </ul>
-                <form onSubmit={this.addNote}>
-                    <input
-                        value={this.state.newNote}
-                        onChange={this.handleNoteChange}
+                <form onSubmit={this.addPicture}>
+                    Name: <input
+                        value={this.state.newPictureName}
+                        onChange={this.handleNameChange}
                     />
+                    <br />
+                    Location: <input
+                        value={this.state.newPictureDir}
+                        onChange={this.handleDirChange}
+                    />
+                    <br />
                     <button type="submit">tallenna</button>
                 </form>
             </div>
