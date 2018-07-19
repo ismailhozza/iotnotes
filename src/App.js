@@ -39,7 +39,8 @@ class App extends React.Component {
                 this.setState({
                     pictures: this.state.pictures.concat(response.data),
                     newPictureName: '',
-                    newPictureDir: ''
+                    newPictureDir: '',
+                    updateDesc: ''
                 })
             })
     }
@@ -55,8 +56,14 @@ class App extends React.Component {
     }
 
     handleUpdate = (id) => {
-        return () => {
-            console.log(`update ${id}`)
+        return (newName) => {
+            console.log(`update ${id} with new name ${newName}`)
+            const orig = this.state.pictures.find((p) => p._id === id)
+            const newObj = {...orig, name: newName}
+            delete newObj._id
+            return pictureListService.updateOne(id, newObj)
+                .then(() => console.log("Update completed"))
+                .catch((error) => console.log(error))
         }
     }
 
@@ -65,14 +72,8 @@ class App extends React.Component {
             pictureListService
                 .deleteOne(id)
                 .then(() => {
-                    let pics = [];
-                    this.state.pictures.forEach((pic) => {
-                        if (id !== pic._id) {
-                            pics.unshift(pic)
-                        }
-                    })
                     this.setState({
-                        pictures: pics
+                        pictures: this.state.pictures.filter((pic) => id !== pic._id)
                     })
                 })
         }
@@ -86,7 +87,7 @@ class App extends React.Component {
             <div>
                 <h1>Picture list</h1>
 
-                <ul>
+                <div>
                     {picturesToShow.map((pic) =>
                         <Picture
                             key={pic._id}
@@ -95,7 +96,7 @@ class App extends React.Component {
                             handleDelete={this.handleDelete(pic._id)}
                         />
                     )}
-                </ul>
+                </div>
                 <form onSubmit={this.addPicture}>
                     Name: <input
                         value={this.state.newPictureName}

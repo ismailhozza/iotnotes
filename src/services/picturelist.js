@@ -1,5 +1,7 @@
 import axios from 'axios'
-const baseUrl = 'http://localhost:3002/picturelist'
+// const baseUrl = 'http://localhost:3002/picturelist'
+const baseUrl = 'http://10.1.114.53:3002/picturelist'
+
 
 const getAll = () => {
     return axios
