@@ -1,6 +1,8 @@
 import React from 'react'
 
 import Note from './components/Note'
+import Notification from './components/Notification'
+
 import notesService from './services/notes'
 
 class App extends React.Component {
@@ -10,7 +12,8 @@ class App extends React.Component {
         this.state = {
             notes: [],
             newNote: "uusi muistiinpano",
-            showAll: true
+            showAll: true,
+            error: null
         }
         console.log("constructor")
     }
@@ -85,6 +88,9 @@ class App extends React.Component {
         return (
             <div>
                 <h1>Muistiinpanot</h1>
+
+                <Notification message={this.state.error} />
+
                 <div>
                     <button onClick={this.toggleVisible}>
                         näytä {label}
