@@ -1,8 +1,7 @@
 import React from 'react'
 
-import axios from 'axios'
-
 import Note from './components/Note'
+import notesService from './services/notes'
 
 class App extends React.Component {
 
@@ -18,10 +17,10 @@ class App extends React.Component {
 
     componentDidMount() {
         console.log("did mount")
-        axios.get("http://localhost:3001/notes")
-            .then(response => {
-                console.log("promise fulfilled")
-                this.setState({ notes: response.data })
+        notesService
+            .getAll()
+            .then(notes => {
+                this.setState({ notes: notes })
             })
     }
 
@@ -31,15 +30,23 @@ class App extends React.Component {
             content: this.state.newNote,
             date: new Date().toISOString(),
             important: Math.random() > 0.5,
-            id: this.state.notes.length + 1
+            // id: this.state.notes.length + 1
         }
 
-        const notes = this.state.notes.concat(noteObject)
+        // const notes = this.state.notes.concat(noteObject)
 
-        this.setState({
-            notes,
-            newNote: ''
-        })
+        // this.setState({
+        //     notes,
+        //     newNote: ''
+        // })
+        notesService
+            .create(noteObject)
+            .then((response) => {
+                this.setState({
+                    notes: this.state.notes.concat(response.data),
+                    newNote: ''
+                })
+            })
     }
 
     handleNoteChange = (event) => {
@@ -49,6 +56,22 @@ class App extends React.Component {
 
     toggleVisible = () => {
         this.setState({showAll: !this.state.showAll})
+    }
+
+    toggleImportanceOf = (id) => {
+        return () => {
+            const url = `http://localhost:3001/notes/${id}`
+            const note = this.state.notes.find(n=> n.id === id)
+            const changedNote = { ...note, important: !note.important }
+
+            notesService
+                .update(id, changedNote)
+                .then( (response) => {
+                    this.setState({
+                        notes: this.state.notes.map( note => note.id !== id ? note: response.data)
+                    })
+                })
+        }
     }
 
     render() {
@@ -69,7 +92,13 @@ class App extends React.Component {
                 </div>
 
                 <ul>
-                    {notesToShow.map((note) => <Note key={note.id} note={note} />)}
+                    {notesToShow.map((note) =>
+                        <Note
+                            key={note.id}
+                            note={note}
+                            toggleImportance={this.toggleImportanceOf(note.id)}
+                        />
+                    )}
                 </ul>
                 <form onSubmit={this.addNote}>
                     <input
