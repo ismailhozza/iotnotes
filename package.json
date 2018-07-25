@@ -16,5 +16,5 @@
     "eject": "react-scripts eject",
     "server": "json-server -p3001 db.json"
   },
-  "proxy": "https://iotnotes.herokuapp.com/"
+  "proxy": "http://localhost:3001/"
 }
