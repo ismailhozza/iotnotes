@@ -1,210 +1,122 @@
-import React from 'react'
+import React from "react"
 import PropTypes from "prop-types"
+// import Note from "./components/Note"
 
-import Note from './components/Note'
-import Notification from './components/Notification'
-import Togglable from './components/Togglable'
-import NoteForm from './components/NoteForm'
-
-import notesService from './services/notes'
-import loginService from './services/login'
-
-const LoginForm = ({ handleSubmit, handleChange, username, password }) => {
-    return (
-        <div>
-            <h2>Kirjaudu</h2>
-
-            <form onSubmit={handleSubmit}>
-                <div>
-                    käyttäjätunnus
-                    <input
-                        type="text"
-                        name="username"
-                        value={username}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div>
-                    salasana
-                    <input
-                        type="password"
-                        name="password"
-                        value={password}
-                        onChange={handleChange}
-                    />
-                </div>
-                <button type="submit">kirjaudu</button>
-            </form>
-        </div>
-    )
+const actionFor = {
+  noteCreation(content) {
+    return {
+      type: "NEW_NOTE",
+      data: {
+        content,
+        important: false,
+        id: generateId()
+      }
+    }
+  },
+  importanceToggling(id) {
+    return {
+      type: "TOGGLE_IMPORTANCE",
+      data: {
+        id: id
+      }
+    }
+  }
 }
 
-LoginForm.propTypes = {
-    handleSubmit: PropTypes.func.isRequired,
-    handleChange: PropTypes.func.isRequired,
-    username: PropTypes.string.isRequired,
-    password: PropTypes.string.isRequired
-}
+const generateId = () => Number((Math.random()*1000000).toFixed(0))
 
-class App extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            notes: [],
-            newNote: "uusi muistiinpano",
-            showAll: true,
-            error: null,
-            username: '',
-            password: '',
-            user: null,
-            loginVisible: false
-        }
+class NoteForm extends React.Component {
+    addNote = (event) => {
+        event.preventDefault()
+        const content = event.target.note.value
+        this.context.store.dispatch(actionFor.noteCreation(content))
+        event.target.note.value = ""
     }
 
     componentDidMount() {
-        notesService
-            .getAll()
-            .then(notes => {
-                this.setState({ notes: notes })
-            })
-
-        const loggedUserJSON = window.localStorage.getItem("loggedNoteappUser")
-        if (loggedUserJSON) {
-            const user = JSON.parse(loggedUserJSON)
-            this.setState({user})
-            notesService.setToken(user.token)
-        }
+        const { store } = this.context
+        this.unsubscribe = store.subscribe(() => this.forceUpdate())
     }
 
-    addNote = async (event) => {
-        event.preventDefault()
-        this.noteForm.toggleVisibility()
-        const noteObject = {
-            content: this.state.newNote,
-            date: new Date().toISOString(),
-            important: Math.random() > 0.5,
-            id: this.state.notes.length + 1
-        }
-
-        const note = await notesService
-            .create(noteObject)
-
-        this.setState({
-            notes: this.state.notes.concat(note),
-            newNote: ''
-        })
-}
-
-    login = async (event) => {
-        event.preventDefault()
-        this.loginForm.toggleVisibility()
-        try {
-            const user = await loginService.login({
-                username: this.state.username,
-                password: this.state.password
-            })
-
-            window.localStorage.setItem("loggedNoteappUser", JSON.stringify(user))
-            notesService.setToken(user.token)
-            this.setState({ username: "", password: "", user: user })
-        } catch (error) {
-            this.setState({ error: "käyttäjätunnus tai salasana virheellinen" })
-            setTimeout(() => {
-                this.setState({ error: null })
-            }, 5000)
-        }
-        // console.log('logging in with', this.state.username, this.state.password)
-    }
-
-    handleLoginFieldChange = (event) => {
-        // if (event.target.name === "password") {
-        //     this.setState({ password: event.target.value })
-        // } else if (event.target.name === "username") {
-        //     this.setState({ [username]: event.target.value })
-        // }
-        this.setState({ [event.target.name]: event.target.value })
-    }
-
-    handleNoteChange = (event) => {
-        console.log(event.target.value)
-        this.setState({ newNote: event.target.value })
-    }
-
-    toggleVisible = () => {
-        this.setState({showAll: !this.state.showAll})
-    }
-
-    toggleImportanceOf = (id) => {
-        return () => {
-            const note = this.state.notes.find(n=> n.id === id)
-            const changedNote = { ...note, important: !note.important }
-
-            notesService
-                .update(id, changedNote)
-                .then( (response) => {
-                    this.setState({
-                        notes: this.state.notes.map( note => note.id !== id ? note: response.data)
-                    })
-                })
-        }
+    componentWillUnMount() {
+        this.unsubscribe()
     }
 
     render() {
-        const notesToShow = this.state.showAll ?
-            this.state.notes :
-            this.state.notes.filter(note => note.important)
-
-        const label = this.state.showAll ? "vain tärkeät" : "kaikki"
-    
-        const notes = () => (
-            <div>
-                <h2>Muistiinpanot</h2>
-    
-                <div>
-                    <button onClick={this.toggleVisible}>
-                        näytä {label}
-                    </button>
-                </div>
-    
-                <ul>
-                    {notesToShow.map((note) =>
-                        <Note
-                            key={note.id}
-                            note={note}
-                            toggleImportance={this.toggleImportanceOf(note.id)}
-                        />
-                    )}
-                </ul>
-            </div>
-        )
-
         return (
-            <div>
-                <Notification message={this.state.error} />
-
-                <Togglable buttonLabel="login" ref={(component) => this.loginForm = component}>
-                    <LoginForm
-                        username={this.state.username}
-                        password={this.state.password}
-                        handleChange={this.handleLoginFieldChange}
-                        handleSubmit={this.login}
-                    />
-                </Togglable>
-
-                {notes()}
-
-                <Togglable buttonLabel="add note" ref={(component) => this.noteForm = component}>
-                    <NoteForm
-                        onSubmit={this.addNote}
-                        value={this.state.newNote}
-                        handleChange={this.handleNoteChange}
-                    />
-                </Togglable>
-
-            </div>
+            <form onSubmit={this.addNote}>
+                <input name="note" />
+                <button type="submit">lisaa</button>
+            </form>
         )
     }
 }
 
-export default App;
+NoteForm.contextTypes = {
+    store: PropTypes.object
+}
+
+const Note = ({note, handleClick}) => {
+    return (
+      <li key={note.id} onClick={handleClick}>
+        {note.content} <strong>{note.important ? "tarkea" : ""} </strong>
+      </li>
+    )
+}
+
+class NoteList extends React.Component {
+    toggleImportance = (id) => () => {
+        this.context.store.dispatch(actionFor.importanceToggling(id))
+      }
+
+    componentDidMount() {
+        const { store } = this.context
+        this.unsubscribe = store.subscribe(() => this.forceUpdate())
+    }
+
+    componentWillUnMount() {
+        this.unsubscribe()
+    }
+
+    render() {
+        return (
+            <ul>
+                {this.context.store.getState().map((note) => 
+                    <Note
+                        key={note.id}
+                        note={note}
+                        handleClick={this.toggleImportance(note.id)}
+                    />
+                )}
+            </ul>
+        )
+    }
+}
+
+NoteList.contextTypes = {
+    store: PropTypes.object
+}
+
+class App extends React.Component {
+  addNote = (event) => {
+    event.preventDefault()
+    const content = event.target.note.value
+    this.props.store.dispatch(actionFor.noteCreation(content))
+    event.target.note.value = ""
+  }
+
+  toggleImportance = (id) => () => {
+    this.props.store.dispatch(actionFor.importanceToggling(id))
+  }
+
+  render() {
+    return (
+        <div>
+            <NoteForm />
+            <NoteList />
+        </div>
+    )
+}
+}
+
+export default App
