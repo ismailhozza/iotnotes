@@ -1,9 +1,22 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
+import React from "react"
+import { mount } from "enzyme"
+import App from "./App"
+import Note from "./components/Note"
+jest.mock("./services/notes")
+import noteService from "./services/notes"
 
-it.skip('renders without crashing', () => {
-  const div = document.createElement('div');
-  ReactDOM.render(<App />, div);
-  ReactDOM.unmountComponentAtNode(div);
-});
+
+describe("<App />", () => {
+  let app
+
+  beforeAll(() => {
+    app = mount(<App />)
+  })
+
+  it("renders all notes it gets from backend", () => {
+    app.update()
+    const noteComponents = app.find(Note)
+    expect(noteComponents.length).toEqual(noteService.notes.length)
+  })
+
+})

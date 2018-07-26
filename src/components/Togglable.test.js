@@ -5,7 +5,7 @@ import Note from "./Note"
 import Togglable from "./Togglable"
 
 
-describe.only("<Togglable />", () => {
+describe("<Togglable />", () => {
     let togglableComponent
 
     beforeEach(() => {
@@ -52,6 +52,6 @@ describe.only("<Togglable />", () => {
             </Togglable>
         )
 
-        console.log(noteComponent.debug())
+        // console.log(noteComponent.debug())
     })
 })
