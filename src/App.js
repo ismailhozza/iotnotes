@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from "prop-types"
 
 import Note from './components/Note'
 import Notification from './components/Notification'
@@ -36,12 +37,23 @@ const LoginForm = ({ handleSubmit, handleChange, username, password }) => {
     )
 }
 
+LoginForm.propTypes = {
+    handleSubmit: PropTypes.func.isRequired,
+    handleChange: PropTypes.func.isRequired,
+    username: PropTypes.string.isRequired,
+    password: PropTypes.string.isRequired
+}
+
 class Togglable extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
             visible: false
         }
+    }
+
+    static propTypes = {
+        buttonLabel: PropTypes.string.isRequired
     }
 
     toggleVisibility = () => {
@@ -230,7 +242,7 @@ class App extends React.Component {
 
                 {notes()}
 
-                <Togglable buttonLabel="new note" ref={(component) => this.noteForm = component}>
+                <Togglable buttonLabel="add note" ref={(component) => this.noteForm = component}>
                     <NoteForm
                         onSubmit={this.addNote}
                         value={this.state.newNote}
