@@ -3,6 +3,8 @@ import PropTypes from "prop-types"
 
 import Note from './components/Note'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
+import NoteForm from './components/NoteForm'
 
 import notesService from './services/notes'
 import loginService from './services/login'
@@ -42,56 +44,6 @@ LoginForm.propTypes = {
     handleChange: PropTypes.func.isRequired,
     username: PropTypes.string.isRequired,
     password: PropTypes.string.isRequired
-}
-
-class Togglable extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            visible: false
-        }
-    }
-
-    static propTypes = {
-        buttonLabel: PropTypes.string.isRequired
-    }
-
-    toggleVisibility = () => {
-        this.setState({visible: !this.state.visible})
-    }
-
-    render() {
-        const hideWhenVisible = { display: this.state.visible ? "none": ""}
-        const showWhenVisible = { display: this.state.visible ? "": "none"}
-
-        return (
-            <div>
-                <div style={hideWhenVisible}>
-                    <button onClick={this.toggleVisibility}>{this.props.buttonLabel}</button>
-                </div>
-                <div style={showWhenVisible}>
-                    {this.props.children}
-                    <button onClick={this.toggleVisibility}>cancel</button>
-                </div>
-            </div>
-        )      
-    }
-}
-
-const NoteForm = ({onSubmit, handleChange, value}) => {
-    return (
-        <div>
-            <h2>Luo uusi muistiinpano</h2>
-
-            <form onSubmit={onSubmit}>
-                <input
-                    value={value}
-                    onChange={handleChange}
-                />
-                <button type="submit">tallenna</button>
-            </form>
-        </div>
-    )
 }
 
 class App extends React.Component {
