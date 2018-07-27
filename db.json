@@ -2,27 +2,13 @@
   "notes": [
     {
       "id": 1,
-      "content": "HTML on todella helppoa",
-      "date": "2017-12-10T17:30:31.098Z",
+      "content": "reduxin storen toiminnan määrittelee reduceri",
       "important": true
     },
     {
       "id": 2,
-      "content": "Selain pystyy suorittamaan vain javascriptiä",
-      "date": "2017-12-10T18:39:34.091Z",
+      "content": "storen tilassa voi olla mielivaltaista dataa",
       "important": false
-    },
-    {
-      "id": 3,
-      "content": "HTTP-protokollan tärkeimmät metodit ovat GET ja POST",
-      "date": "2017-12-10T19:20:14.298Z",
-      "important": true
-    },
-    {
-      "content": "uusi muistiinpano",
-      "date": "2018-07-19T16:59:00.706Z",
-      "important": false,
-      "id": 4
     }
   ]
 }
