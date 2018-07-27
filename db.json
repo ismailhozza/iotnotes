@@ -9,6 +9,16 @@
       "id": 2,
       "content": "storen tilassa voi olla mielivaltaista dataa",
       "important": false
+    },
+    {
+      "content": "add to backend",
+      "important": false,
+      "id": 3
+    },
+    {
+      "content": "with thunk",
+      "important": false,
+      "id": 4
     }
   ]
 }
